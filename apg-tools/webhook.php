@@ -15,7 +15,7 @@ try {
   // file_put_contents('logs.txt', json_encode($post));die;
   foreach($post['plugins'] as $key => $value){
     if($value['is_external_link'] == 0){
-      $file_url = $post['url_download']."/{$value['file_name']}";
+      $file_url = $post['url_download']."/{$value['id']}";
     }else{
       $file_url = $value['external_link'];
     }
