@@ -37,8 +37,6 @@ function page_render(){
   apg_view(ABSPATH.'wp-content/plugins/apg-tools/admin/apg-admin.php', $data);
 }
 
-echo 'wqvdqiwndiqw;bdcjwenckwmdowe;bfiwe;bfuywebfciuwevfwetyvftywefdiuqwhbdgiuqwbfguyqwvdwjsdbxqwjwdhbukqwdviqwudulqwfdg';
-
 // ----------------------------------------------------------------------------------
 
 add_filter('plugins_api', 'apg_plugin_info', 20, 3);
