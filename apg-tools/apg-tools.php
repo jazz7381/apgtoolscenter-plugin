@@ -161,3 +161,12 @@ function apg_push_update( $transient ){
 	}
   return $transient;
 }
+
+add_action( 'upgrader_process_complete', 'apg_after_update', 10, 2 );
+
+function apg_after_update( $upgrader_object, $options ) {
+	if ( $options['action'] == 'update' && $options['type'] === 'plugin' )  {
+		// just clean the cache when new plugin version is installed
+		delete_transient( 'apg_upgrade_apg-tools' );
+	}
+}
