@@ -1,14 +1,14 @@
 <?php
 /**
  * @package APG_Tools
- * @version 1.2
+ * @version 1.2.1
  */
 /*
 Plugin Name: APG Tools
 Plugin URI: https://www.asiapowergames.com
 Description: Tools used to control multiple wordpress site specific for APG.
 Author: Jazz
-Version: 1.2
+Version: 1.2.1
 Author URI: https://www.github.com/7381jazz
 */
 
