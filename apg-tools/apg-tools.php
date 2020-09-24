@@ -1,28 +1,23 @@
 <?php
 /**
  * @package APG_Tools
- * @version 1.0
+ * @version 1.2
  */
 /*
 Plugin Name: APG Tools
 Plugin URI: https://www.asiapowergames.com
 Description: Tools used to control multiple wordpress site specific for APG.
 Author: Jazz
-Version: 1.0
+Version: 1.2
 Author URI: https://www.github.com/7381jazz
 */
-
-// define( 'WPRP_PLUGIN_SLUG', 'apgtools' );
-// define( 'WPRP_PLUGIN_BASE',  plugin_basename(__FILE__) );
-// define( 'WPRP_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
-// define( 'WPR_API_URL', 'http://localhost/testing/apg-tools/api/json.php' );
-// define( 'WPR_WEBHOOK', 'http://localhost/testing/apg-tools/webhook.php' );
 
 require_once('includes/config.php');
 
 require_once(ABSPATH.'wp-admin/includes/admin.php');
 require_once(ABSPATH.'wp-admin/includes/file.php');
 require_once(ABSPATH.'wp-admin/includes/plugin.php');
+require_once(ABSPATH.'wp-includes/theme.php');
 require_once(ABSPATH.'wp-content/plugins/apg-tools/includes/helper.php');
 
 add_action('admin_menu', 'init_actions');
@@ -168,5 +163,34 @@ function apg_after_update( $upgrader_object, $options ) {
 	if ( $options['action'] == 'update' && $options['type'] === 'plugin' )  {
 		// just clean the cache when new plugin version is installed
 		delete_transient( 'apg_upgrade_apg-tools' );
+	}
+}
+
+// ------------------------- API Request ---------------------------- //
+add_action( 'rest_api_init', 'apg_webhooks' );
+
+function apg_webhooks(){
+	register_rest_route('apg/v1', 'webhooks', [
+		"methods" 	=> "post",
+		"callback"	=> "apg_response"
+	]);
+}
+
+function apg_response(){
+
+	$post = $_POST;
+
+	if(!empty($post['token_auth']) && $post['token_auth'] == apg_config()->token_auth){
+		switch ($post['webhooks_type']) {
+			case 'plugin':
+				require_once(APGPATH.'/webhooks/plugin.php');
+			break;
+			case 'theme':
+				require_once(APGPATH.'/webhooks/theme.php');
+				break;
+			default:
+				return http_response_code(403);
+				break;
+		}
 	}
 }

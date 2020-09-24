@@ -1,17 +1,8 @@
 <?php
+ini_set("memory_limit",'-1');
 ini_set('max_execution_time', 0);
+ini_set('auto_detect_line_endings', true);
 try {
-  define( 'WP_ADMIN', TRUE );
-  define( 'WP_NETWORK_ADMIN', TRUE );
-  define( 'WP_USER_ADMIN', TRUE );
-  require_once('includes/config.php');
-  require_once(ABSPATH.'wp-admin/includes/admin.php');
-  require_once(ABSPATH.'wp-admin/includes/file.php');
-  require_once(ABSPATH.'wp-admin/includes/plugin.php');
-  require_once(ABSPATH.'wp-content/plugins/apg-tools/includes/helper.php');
-
-  $post = $_POST;
-
   if($post['token_auth'] == apg_config()->token_auth){
     foreach($post['plugins'] as $key => $value){
       if($value['is_external_link'] == 0){
@@ -19,9 +10,10 @@ try {
       }else{
         $file_url = $value['external_link'];
       }
-      $tmp_file = download_url($file_url);
-      copy($tmp_file, $value['file_name']);
-      unlink($tmpfile);
+      $bytes = chunkDownloadFile($file_url, $value['file_name'], 300);
+      // $tmp_file = download_url($file_url);
+      // copy($tmp_file, $value['file_name']);
+      // unlink($tmpfile);
       // extract plugin to plugins folder
       $zip = new ZipArchive;
       $zip->open($value['file_name']);

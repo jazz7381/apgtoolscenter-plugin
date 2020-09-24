@@ -32,3 +32,27 @@ function apg_view($path, $data = []){
 function redirect_back(){
   header("location: {$_SERVER['HTTP_REFERER']}");
 }
+
+function chunkDownloadFile($srcName, $dstName, $chunkSize = 1, $returnbytes = true) {
+  $chunksize = $chunkSize*(1024*1024); // How many bytes per chunk
+  $data = '';
+  $bytesCount = 0;
+  $handle = fopen($srcName, 'rb');
+  $fp = fopen($dstName, 'w');
+  if ($handle === false) {
+    return false;
+  }
+  while (!feof($handle)) {
+    $data = fread($handle, $chunksize);
+    fwrite($fp, $data, strlen($data));
+    if ($returnbytes) {
+        $bytesCount += strlen($data);
+    }
+  }
+  $status = fclose($handle);
+  fclose($fp);
+  if ($returnbytes && $status) {
+    return $bytesCount; // Return number of bytes delivered like readfile() does.
+  }
+  return $status;
+}
