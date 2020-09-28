@@ -24,7 +24,10 @@ try {
       // activate plugin
       apg_activate_plugin($value['slug'].'/'.$value['core_file']);
     }
-    return true;
+    echo json_encode([
+      'status' => TRUE,
+      'message' => 'Success'
+    ]);
   }else{
     return http_response_code(403);
   }

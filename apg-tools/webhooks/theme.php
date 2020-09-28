@@ -24,7 +24,10 @@ try {
     unlink($theme['file_name']);
     // activate plugin
     switch_theme($theme['slug']);
-    return true;
+    echo json_encode([
+      'status' => TRUE,
+      'message' => 'Success'
+    ]);
   }else{
     return http_response_code(403);
   }
