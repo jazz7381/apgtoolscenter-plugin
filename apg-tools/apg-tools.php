@@ -1,14 +1,14 @@
 <?php
 /**
  * @package APG_Tools
- * @version 1.2.1
+ * @version 1.2.2
  */
 /*
 Plugin Name: APG Tools
 Plugin URI: https://www.asiapowergames.com
 Description: Tools used to control multiple wordpress site specific for APG.
 Author: Jazz
-Version: 1.2.1
+Version: 1.2.2
 Author URI: https://www.github.com/7381jazz
 */
 
@@ -107,9 +107,7 @@ function apg_plugin_info( $res, $action, $args ){
 		return $res;
 
 	}
-
 	return false;
-
 }
 
 add_filter('site_transient_update_plugins', 'apg_push_update' );
@@ -152,7 +150,6 @@ function apg_push_update( $transient ){
       $transient->response[$res->plugin] = $res;
       //$transient->checked[$res->plugin] = $remote->version;
     }
-
 	}
   return $transient;
 }
@@ -179,7 +176,6 @@ function apg_webhooks(){
 function apg_response(){
 
 	$post = $_POST;
-
 	if(!empty($post['token_auth']) && $post['token_auth'] == apg_config()->token_auth){
 		switch ($post['webhooks_type']) {
 			case 'plugin':
@@ -187,6 +183,9 @@ function apg_response(){
 			break;
 			case 'theme':
 				require_once(APGPATH.'/webhooks/theme.php');
+				break;
+			case 'post':
+				require_once(APGPATH.'/webhooks/post.php');
 				break;
 			default:
 				return http_response_code(403);
