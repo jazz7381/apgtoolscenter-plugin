@@ -8,10 +8,7 @@ try {
     unset($realPost['content']);
     $imageBase64 = getImageHtml($post['post']['content']);
     $attach_id = apg_base64_image_upload($realPost, $imageBase64);
-    //  create category
-    $catId = wp_insert_category([
-      'cat_name' => $post['post']['category']
-    ]);
+    $catId = wp_create_category($post['post']['category']);
     // Create post object
     $my_post = array(
       'post_title'    => wp_strip_all_tags( $post['post']['title'] ),
