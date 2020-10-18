@@ -89,13 +89,60 @@ function apg_base64_image_upload($post, $base64) {
   $upload_dir       = wp_upload_dir();
   // @new
   $upload_path      = str_replace( '/', DIRECTORY_SEPARATOR, $upload_dir['path'] ) . DIRECTORY_SEPARATOR;
-
   $img = $base64;
   $img = str_replace('data:image/png;base64,', '', $img);
   $img = str_replace('data:image/jpeg;base64,', '', $img);
   $img = str_replace(' ', '+', $img);
   $decoded          = base64_decode($img) ;
   $filename         = apg_slugify($post['title']).'.png';
+  $hashed_filename  = md5( $filename . microtime() ) . '_' . $filename;
+  // @new
+  $image_upload     = file_put_contents( $upload_path . $hashed_filename, $decoded );
+  //HANDLE UPLOADED FILE
+  if( !function_exists( 'wp_handle_sideload' ) ) {
+    require_once( ABSPATH . 'wp-admin/includes/file.php' );
+  }
+  // Without that I'm getting a debug error!?
+  if( !function_exists( 'wp_get_current_user' ) ) {
+    require_once( ABSPATH . 'wp-includes/pluggable.php' );
+  }
+  // @new
+  $file             = array();
+  $file['error']    = '';
+  $file['tmp_name'] = $upload_path . $hashed_filename;
+  $file['name']     = $hashed_filename;
+  $file['type']     = 'image/png';
+  $file['size']     = filesize( $upload_path . $hashed_filename );
+  // upload file to server
+  // @new use $file instead of $image_upload
+  $file_return      = wp_handle_sideload( $file, array( 'test_form' => false ) );
+
+  $filename = $file_return['file'];
+  $attachment = array(
+    'post_mime_type' => $file_return['type'],
+    'post_title' => preg_replace('/\.[^.]+$/', '', basename($filename)),
+    'post_content' => '',
+    'post_status' => 'inherit',
+    'guid' => $upload_dir['url'] . '/' . basename($filename)
+  );
+  $attach_id = wp_insert_attachment( $attachment, $filename, 289 );
+  require_once(ABSPATH . 'wp-admin/includes/image.php');
+  $attach_data = wp_generate_attachment_metadata( $attach_id, $filename );
+  wp_update_attachment_metadata( $attach_id, $attach_data );
+  return $attach_id;
+}
+
+function apg_base64_image_download($title, $url){
+  $upload_dir       = wp_upload_dir();
+  // @new
+  $upload_path      = str_replace( '/', DIRECTORY_SEPARATOR, $upload_dir['path'] ) . DIRECTORY_SEPARATOR;
+
+  $img = base64_encode(file_get_contents($url));
+  $img = str_replace('data:image/png;base64,', '', $img);
+  $img = str_replace('data:image/jpeg;base64,', '', $img);
+  $img = str_replace(' ', '+', $img);
+  $decoded          = base64_decode($img) ;
+  $filename         = apg_slugify($title).'.png';
   $hashed_filename  = md5( $filename . microtime() ) . '_' . $filename;
   // @new
   $image_upload     = file_put_contents( $upload_path . $hashed_filename, $decoded );
@@ -142,23 +189,23 @@ function apg_wp_insert_post( $postarr, $wp_error = false ) {
   $user_id = get_current_user_id();
 
   $defaults = array(
-      'post_author'           => $user_id,
-      'post_content'          => '',
-      'post_content_filtered' => '',
-      'post_title'            => '',
-      'post_excerpt'          => '',
-      'post_status'           => 'draft',
-      'post_type'             => 'post',
-      'comment_status'        => '',
-      'ping_status'           => '',
-      'post_password'         => '',
-      'to_ping'               => '',
-      'pinged'                => '',
-      'post_parent'           => 0,
-      'menu_order'            => 0,
-      'guid'                  => '',
-      'import_id'             => 0,
-      'context'               => '',
+    'post_author'           => $user_id,
+    'post_content'          => '',
+    'post_content_filtered' => '',
+    'post_title'            => '',
+    'post_excerpt'          => '',
+    'post_status'           => 'draft',
+    'post_type'             => 'post',
+    'comment_status'        => '',
+    'ping_status'           => '',
+    'post_password'         => '',
+    'to_ping'               => '',
+    'pinged'                => '',
+    'post_parent'           => 0,
+    'menu_order'            => 0,
+    'guid'                  => '',
+    'import_id'             => 0,
+    'context'               => '',
   );
 
   $postarr = wp_parse_args( $postarr, $defaults );
