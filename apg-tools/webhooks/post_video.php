@@ -18,7 +18,8 @@ try {
       'post_author'   => 1,
       'post_category' => $catIds,
       'meta_input'    => array(
-        'video_url'   => $realPost['video_source']['source_content']
+        'rank_math_focus_keyword' => $realPost['focus_keyword'],
+        'video_url'               => $realPost['video_source']['source_content'],
       )
     );
     // Insert the post into the database
