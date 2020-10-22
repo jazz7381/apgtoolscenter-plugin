@@ -6,7 +6,7 @@ try {
   if($post['token_auth'] == apg_config()->token_auth){
     // assign real post to variable
     $realPost = $post['post'];
-
+    // if theme wp is bestia
     if($realPost['type'] == 'bestia'){
       // start ---------------------- bestia
       $catIds = [];
@@ -29,6 +29,7 @@ try {
         'meta_input'    => array(
           'rank_math_focus_keyword' => $realPost['focus_keyword'],
           'video_url'               => $realPost['video_source']['source_content'],
+          'video_duration'          => $realPost['video_duration']
         )
       );
       // Insert the post into the database
@@ -40,8 +41,10 @@ try {
         $attach_id = apg_base64_image_download($realPost['title'], $realPost['image_source']['source_content']);
       }
       set_post_thumbnail($postId, $attach_id);
+      // set performer
+      wp_set_object_terms( $postId, $realPost['performer'], 'performer');
       // end ---------------------- bestia
-    }elseif($realPost['type'] == 'indoxximovie'){
+    }elseif($realPost['type'] == 'indoxximovie'){ // if theme wp is indoxximovie
       // start ---------------------- indoxximovie
       // call curl library
       require_once(APGPATH.'/lib/curl.php');
