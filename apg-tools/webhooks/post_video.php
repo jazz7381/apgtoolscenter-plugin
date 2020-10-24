@@ -58,12 +58,16 @@ try {
       $tmdbApiKey = $post['tmdb_api_key'];
       // get omdb api key
       $omdbApiKey = $post['omdb_api_key'];
+      // video type
+      $videoType = 'movie';
+      if($realPost['video_type'] == 'series'){
+        $videoType = 'tv';
+      }
       // get all response type
-      $responseDetail = json_decode($curl->get("https://api.themoviedb.org/3/movie/$movieId?api_key=$tmdbApiKey"));
-      $responseImage  = json_decode($curl->get("https://api.themoviedb.org/3/movie/$movieId/images?api_key=$tmdbApiKey"));
-      $responseVideo  = json_decode($curl->get("https://api.themoviedb.org/3/movie/$movieId/videos?api_key=$tmdbApiKey"));
-      $responseCredit = json_decode($curl->get("https://api.themoviedb.org/3/movie/$movieId/casts?api_key=$tmdbApiKey"));
-      $responseOmdb   = json_decode($curl->get("https://www.omdbapi.com/?apikey=$omdbApiKey&i=$movieId"));
+      $responseDetail = json_decode($curl->get("https://api.themoviedb.org/3/$videoType/$movieId?api_key=$tmdbApiKey"));
+      $responseImage  = json_decode($curl->get("https://api.themoviedb.org/3/$videoType/$movieId/images?api_key=$tmdbApiKey"));
+      $responseVideo  = json_decode($curl->get("https://api.themoviedb.org/3/$videoType/$movieId/videos?api_key=$tmdbApiKey"));
+      $responseCredit = json_decode($curl->get("https://api.themoviedb.org/3/$videoType/$movieId/credits?api_key=$tmdbApiKey"));
       // get directors
       $directors = [];
       foreach($responseCredit->crew as $value){
@@ -78,11 +82,6 @@ try {
           $actors[] = $value->name;
         }
       }
-      // get countries
-      $countries = [];
-      foreach(explode(',', $responseOmdb->Country) as $value){
-        $countries[] = $value;
-      }
       // instant translator object
       $translator = new Translator;
       if(!empty($realPost['content'])){
@@ -95,61 +94,102 @@ try {
       foreach($responseDetail->genres as $value){
         $catIds[] = wp_create_category($value->name);
       }
-      // release year
-      $releaseYear   = $responseOmdb->Year;
       // get quality
-      $quality = [];
-      if(empty($realPost['quality'])){
-        $quality[] = get_option('d_quality');
-      }else{
-        $quality = $realPost['quality'];
+      $quality = $realPost['quality'];
+      // Create post object
+      $my_post = [
+        'post_content'  => $realPost['content'],
+        'post_status'   => 'publish',
+        'post_author'   => 1,
+        'post_category' => $catIds,
+        'tags_input'    => $realPost['tag'],
+        'meta_input'    => [
+          // meta atachment
+          'poster_url'              =>  'https://image.tmdb.org/t/p/w185'.$responseDetail->poster_path,
+          'fondo_player'            =>  'https://image.tmdb.org/t/p/w780'.$responseDetail->backdrop_path,
+          'youtube_id'              =>  "[{$responseVideo->results[0]->key}]"
+        ]
+      ];
+      // get image backdrop
+      foreach($responseImage->backdrops as $value){
+        $my_post['meta_input']['imagenes']    .= "https://image.tmdb.org/t/p/w300$value->file_path\n";
       }
+      if($realPost['video_type'] == 'movie'){
+        $responseOmdb   = json_decode($curl->get("https://www.omdbapi.com/?apikey=$omdbApiKey&i=$movieId"));
+        // get countries
+        $countries = [];
+        foreach(explode(',', $responseOmdb->Country) as $value){
+          $countries[] = $value;
+        }
+        // set post title
+        $my_post['post_title']                        = wp_strip_all_tags($responseDetail->title);
+        // imdb movie id
+        $my_post['meta_input']['Checkbx2']            = $responseDetail->imdb_id;
+        $my_post['meta_input']['Title']               = $responseDetail->original_title;
+        // imdb data
+        $my_post['meta_input']['idtmdb']              = $responseDetail->id;
+        $my_post['meta_input']['imdbRating']          = $responseOmdb->imdbRating;
+        $my_post['meta_input']['imdbVotes']           = $responseOmdb->imdbVotes;
+        $my_post['meta_input']['Rated']               = $responseOmdb->Rated;
+        $my_post['meta_input']['Country']             = $responseOmdb->Country;
+        // tmdb data
+        $my_post['meta_input']['tagline']             = $responseDetail->tagline;
+        $my_post['meta_input']['release_date']        = $responseDetail->release_date;
+        $my_post['meta_input']['vote_average']        = $responseDetail->vote_average;
+        $my_post['meta_input']['vote_count']          = $responseDetail->vote_count;
+        $my_post['meta_input']['Runtime']             = date('H:i:00', mktime(0,$responseDetail->runtime));
+        // release year
+        $releaseYear                                  = $responseOmdb->Year;
+        $sourceName                                   = 'SERVER VIP';
+      }else{
+        // get countries
+        $countries = [];
+        foreach($responseDetail->origin_country as $key => $value){
+          switch ($value) {
+            case 'US':
+              $countries[$key] = 'USA';
+              break;
+            case 'JP':
+              $countries[$key] = 'Japan';
+              break;
+            default:
+              $countries[$key] = $value;
+              break;
+          }
+        }
+        $my_post['post_title']                        = wp_strip_all_tags($responseDetail->name);
+        $my_post['post_type']                         = 'tvshows';
+        $my_post['meta_input']['id']                  = $responseDetail->id;
+        // TV Series Data
+        $my_post['meta_input']['original_name']       = $responseDetail->original_name;
+        $my_post['meta_input']['first_air_date']      = $responseDetail->first_air_date;
+        $my_post['meta_input']['last_air_date']       = $responseDetail->last_air_date;
+        $my_post['meta_input']['serie_vote_average']  = $responseDetail->vote_average;
+        $my_post['meta_input']['serie_vote_count']    = $responseDetail->vote_count;
+        $my_post['meta_input']['number_of_episodes']  = $responseDetail->number_of_episodes;
+        $my_post['meta_input']['number_of_seasons']   = $responseDetail->number_of_seasons;
+        $my_post['meta_input']['episode_run_time']    = $responseDetail->episode_run_time[0];
+        $my_post['meta_input']['status']              = $responseDetail->status;
+        // release year
+        $releaseYear                                  = date('Y', strtotime($responseDetail->first_air_date));
+        $sourceName                                   = 'Episode ';
+      }
+      // set rankmath focus keyword
+      $my_post['meta_input']['rank_math_focus_keyword']             = wp_strip_all_tags($my_post['post_title']);
       // video source
       $videoSources = [];
       foreach($realPost['video_source'] as $key => $value){
         $num = $key + 1;
         $videoSources[] = [
-          'name'    => 'SERVER VIP'.$num,
+          'name'    => $sourceName.$num,
           'idioma'  => 'id',
           'select'  => 'iframe',
           'url'     => $value,
           'mid'     => $num
         ];
       }
-      // Create post object
-      $my_post = array(
-        'post_title'    => wp_strip_all_tags($responseDetail->title),
-        'post_content'  => $realPost['content'],
-        'post_status'   => 'publish',
-        'post_author'   => 1,
-        'post_category' => $catIds,
-        'tags_input'    => $realPost['tag'],
-        'meta_input'    => array(
-          'rank_math_focus_keyword' =>  wp_strip_all_tags($responseDetail->title),
-          'repeatable_fields'       =>  $videoSources,
-          'idtmdb'                  =>  $responseDetail->id,
-          // imdb movie id
-          'Checkbx2'                =>  $responseDetail->imdb_id,
-          // meta atachment
-          'poster_url'              =>  'https://image.tmdb.org/t/p/w185'.$responseDetail->poster_path,
-          'fondo_player'            =>  'https://image.tmdb.org/t/p/w780'.$responseDetail->backdrop_path,
-          'youtube_id'              =>  "[{$responseVideo->results[0]->key}]",
-          // imdb data
-          'imdbRating'              =>  $responseOmdb->imdbRating,
-          'imdbVotes'               =>  $responseOmdb->imdbVotes,
-          'Rated'                   =>  $responseOmdb->Rated,
-          'Country'                 =>  $responseOmdb->Country,
-          'Title'                   =>  $responseDetail->original_title,
-          'tagline'                 =>  $responseDetail->tagline,
-          'release_date'            =>  $responseDetail->release_date,
-          'vote_average'            =>  $responseDetail->vote_average,
-          'vote_count'              =>  $responseDetail->vote_count,
-          'Runtime'                 =>  date('H:i:00', mktime(0,$responseDetail->runtime))
-        )
-      );
-      foreach($responseImage->backdrops as $value){
-        $my_post['meta_input']['imagenes']    .= "https://image.tmdb.org/t/p/w300/$value->file_path\n";
-      }
+      // set video source meta
+      $my_post['meta_input']['repeatable_fields']     = $videoSources;
       // Insert the post into the database
       $postId = apg_wp_insert_post($my_post);
       // insert thumbnail
@@ -158,14 +198,30 @@ try {
       set_post_thumbnail($postId, $attach_id);
       // set release year
       wp_set_object_terms( $postId, array($releaseYear), 'release-year');
-      // set quality
-      wp_set_object_terms( $postId, $quality, 'quality');
+      // // set quality
+      // wp_set_object_terms( $postId, $quality, 'quality');
       // set director
       wp_set_object_terms( $postId, $directors, 'director');
       // set actor
       wp_set_object_terms( $postId, $actors, 'stars');
       // set country
       wp_set_object_terms( $postId, $countries, 'country');
+      // set network and studios for series video
+      if($my_post['post_type'] == 'tvshows'){
+        // array networks
+        $networks = [];
+        foreach($responseDetail->networks as $value){
+          $networks[] = $value->name;
+        }
+        // array studio
+        $studio = [];
+        foreach($responseDetail->production_companies as $value){
+          $studio[] = $value->name;
+        }
+        // set custom taxonomy
+        wp_set_object_terms( $postId, $networks, 'networks');
+        wp_set_object_terms( $postId, $studio, 'studio');
+      }
       // end ---------------------- indoxximovie
     }
     echo json_encode([
@@ -176,5 +232,9 @@ try {
     return http_response_code(403);
   }
 } catch (\Throwable $th) {
+  echo json_encode([
+    'status' => FALSE,
+    'message' => $th->getMessage()
+  ]);
   file_put_contents('log.txt', $th);
 }
