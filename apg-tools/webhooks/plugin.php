@@ -29,8 +29,6 @@ try {
       // activate plugin
       apg_activate_plugin($value['slug'].'/'.$value['core_file']);
     }
-    // swithc theme
-    switch_theme($theme['slug']);
     // return response as json
     echo json_encode([
       'status' => TRUE,
