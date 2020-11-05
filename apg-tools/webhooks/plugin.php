@@ -10,10 +10,15 @@ try {
       }else{
         $file_url = $value['external_link'];
       }
+      // download file with chunk method
       $bytes = chunkDownloadFile($file_url, $value['file_name'], 300);
-      // $tmp_file = download_url($file_url);
-      // copy($tmp_file, $value['file_name']);
-      // unlink($tmpfile);
+      // check if folder is exists
+      if(file_exists(ABSPATH.'wp-content/plugins/'.$value['slug']) && !empty($value['slug'])){
+        WP_Filesystem();
+        global $wp_filesystem;
+        // delete directory path
+        $wp_filesystem->rmdir(ABSPATH.'wp-content/plugins/'.$value['slug'], true);
+      }
       // extract plugin to plugins folder
       $zip = new ZipArchive;
       $zip->open($value['file_name']);
@@ -24,6 +29,11 @@ try {
       // activate plugin
       apg_activate_plugin($value['slug'].'/'.$value['core_file']);
     }
+    // swithc theme
+    switch_theme($theme['slug']);
+    // clean buffer to prevent collision with other header
+    ob_clean();
+    // return response as json
     echo json_encode([
       'status' => TRUE,
       'message' => 'Success'

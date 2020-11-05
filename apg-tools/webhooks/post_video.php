@@ -224,6 +224,9 @@ try {
       }
       // end ---------------------- indoxximovie
     }
+    // clean buffer to prevent collision with other header
+    ob_clean();
+    // return response as json
     echo json_encode([
       'status' => TRUE,
       'message' => 'Success'
@@ -232,6 +235,9 @@ try {
     return http_response_code(403);
   }
 } catch (\Throwable $th) {
+  // clean buffer to prevent collision with other header
+  ob_clean();
+  // return response as json
   echo json_encode([
     'status' => FALSE,
     'message' => $th->getMessage()

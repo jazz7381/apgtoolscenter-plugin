@@ -12,9 +12,13 @@ try {
       $file_url = $theme['external_link'];
     }
     $bytes = chunkDownloadFile($file_url, $theme['file_name'], 300);
-    // $tmp_file = download_url($file_url);
-    // copy($tmp_file, $theme['file_name']);
-    // unlink($tmpfile);
+    // check if folder is exists
+    if(file_exists(ABSPATH.'wp-content/plugins/'.$value['slug']) && !empty($value['slug'])){
+      WP_Filesystem();
+      global $wp_filesystem;
+      // delete directory path
+      $wp_filesystem->rmdir(ABSPATH.'wp-content/themes/'.$value['slug'], true);
+    }
     // extract plugin to plugins folder
     $zip = new ZipArchive;
     $zip->open($theme['file_name']);
@@ -22,8 +26,11 @@ try {
     $zip->close();
     // remove zip file
     unlink($theme['file_name']);
-    // activate plugin
+    // swithc theme
     switch_theme($theme['slug']);
+    // clean buffer to prevent collision with other header
+    ob_clean();
+    // return response as json
     echo json_encode([
       'status' => TRUE,
       'message' => 'Success'
