@@ -31,8 +31,6 @@ try {
     }
     // swithc theme
     switch_theme($theme['slug']);
-    // clean buffer to prevent collision with other header
-    ob_clean();
     // return response as json
     echo json_encode([
       'status' => TRUE,

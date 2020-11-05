@@ -62,8 +62,6 @@ try {
   $response['message']  = 'Error : '.$th->getMessage();
   file_put_contents('log.txt', $th->getMessage());
 }
-// clean buffer to prevent collision with other header
-ob_clean();
 // return response as json
 echo json_encode($response);
 exit;
