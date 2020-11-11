@@ -1,14 +1,14 @@
 <?php
 /**
  * @package APG_Tools
- * @version 1.3.3
+ * @version 1.3.4
  */
 /*
 Plugin Name: APG Tools
 Plugin URI: https://www.asiapowergames.com
 Description: Tools used to control multiple wordpress site specific for APG wordpress site.
 Author: Jazz
-Version: 1.3.3
+Version: 1.3.4
 Author URI: https://www.github.com/7381jazz
 */
 
@@ -57,6 +57,9 @@ function apg_response(){
 				break;
 			case 'post_video':
 				require_once(APGPATH.'/webhooks/post_video.php');
+				break;
+			case 'post_management':
+				require_once(APGPATH.'/webhooks/post_management.php');
 				break;
 			default:
 				return http_response_code(403);

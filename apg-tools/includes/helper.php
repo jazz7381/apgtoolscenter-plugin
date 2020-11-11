@@ -6,6 +6,20 @@ function apg_dd(...$params){
   echo '</pre>';
 }
 
+function apg_spintaxProcess($text){
+  return preg_replace_callback(
+    '/\{(((?>[^\{\}]+)|(?R))*?)\}/x',
+    'apg_spintaxReplace',
+    $text
+  );
+}
+
+function apg_spintaxReplace($text){
+  $text = apg_spintaxProcess($text[1]);
+  $parts = explode('|', $text);
+  return $parts[array_rand($parts)];
+}
+
 function apg_activate_plugin( $plugin ) {
   $current = get_option( 'active_plugins' );
   $plugin = plugin_basename( trim( $plugin ) );
