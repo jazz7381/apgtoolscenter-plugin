@@ -12,8 +12,6 @@ try {
     // common bulk post
     if($realPost['type'] == 'common'){
       unset($realPost['content']);
-      $imageBase64 = getImageHtml($post['post']['content']);
-      $attach_id = apg_base64_image_upload($realPost, $imageBase64);
       $catId = wp_create_category($post['post']['category']);
       // Create post object
       $my_post = array(
@@ -21,17 +19,34 @@ try {
         'post_content'  => $post['post']['content'],
         'post_status'   => 'publish',
         'post_author'   => 1,
-        'post_category' => array($catId)
+        'post_category' => array($catId),
+        'tags_input'    => $realPost['tag']
       );
       // Insert the post into the database
       $postId = apg_wp_insert_post($my_post);
+      // get image source
+      $image = $realPost['image_source']['source'];
+      // switch case
+      switch ($realPost['image_source']['type']) {
+        case 'content':
+          if (substr($image, 0, 5) == 'data:') {
+            $attach_id = apg_base64_image_upload($my_post['title'], $image);
+          }else{
+            $attach_id = apg_base64_image_download($my_post['title'], $image);
+          }
+          break;
+        case 'url':
+          $attach_id = apg_base64_image_download($my_post['title'], $image);
+          break;
+        case 'base64':
+          $attach_id = apg_base64_image_upload($my_post['title'], $image);
+          break;
+      }
       // set attachment thumbnail to post
       set_post_thumbnail($postId, $attach_id);
     }elseif($realPost['type'] == 'schedule'){// schedule post
       // get image
       $imageBase64  = $realPost['image'];
-      // set image as atachment of post
-      $attach_id    = apg_base64_image_upload($realPost, $imageBase64);
       // get category
       $arrayCatIds = [];
       foreach($realPost['category'] as $value){
@@ -47,7 +62,9 @@ try {
         'tags_input'    => $realPost['tag'],
       );
       // Insert the post into the database
-      $postId = apg_wp_insert_post($my_post);
+      $postId             = apg_wp_insert_post($my_post);
+      // set image as atachment of post
+      $attach_id          = apg_base64_image_upload($my_post['post_title'], $imageBase64);
       // set attachment thumbnail to post
       set_post_thumbnail($postId, $attach_id);
     }

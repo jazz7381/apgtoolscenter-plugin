@@ -36,7 +36,7 @@ try {
       $postId = apg_wp_insert_post($my_post);
       // check img thumbnail type
       if($realPost['image_source']['source_type'] == 'file'){
-        $attach_id = apg_base64_image_upload($realPost, $realPost['image_source']['source_content']);
+        $attach_id = apg_base64_image_upload($my_post['post_title'], $realPost['image_source']['source_content']);
       }else{
         $attach_id = apg_base64_image_download($realPost['title'], $realPost['image_source']['source_content']);
       }
@@ -68,10 +68,23 @@ try {
       $responseImage  = json_decode($curl->get("https://api.themoviedb.org/3/$videoType/$movieId/images?api_key=$tmdbApiKey"));
       $responseVideo  = json_decode($curl->get("https://api.themoviedb.org/3/$videoType/$movieId/videos?api_key=$tmdbApiKey"));
       $responseCredit = json_decode($curl->get("https://api.themoviedb.org/3/$videoType/$movieId/credits?api_key=$tmdbApiKey"));
+      // post title
+      $postTitle = $responseDetail->name;
+      // poster url
+      $posterUrl = 'https://image.tmdb.org/t/p/w185'.$responseDetail->poster_path;
       // get directors
       $directors = [];
-      foreach($responseCredit->crew as $value){
-        if($value->job == 'Director'){
+      if($realPost['video_type'] == 'movie'){
+        foreach($responseCredit->crew as $value){
+          if($value->job == 'Director'){
+            $directors[] = $value->name;
+          }
+        }
+      }else{
+        $responseSeason = json_decode($curl->get("https://api.themoviedb.org/3/$videoType/$movieId/season/{$realPost['season']}?api_key=$tmdbApiKey"));
+        $postTitle = $postTitle.' '.$responseSeason->name;
+        $posterUrl = 'https://image.tmdb.org/t/p/w185'.$responseSeason->poster_path;
+        foreach($responseDetail->created_by as $value){
           $directors[] = $value->name;
         }
       }
@@ -105,7 +118,7 @@ try {
         'tags_input'    => $realPost['tag'],
         'meta_input'    => [
           // meta atachment
-          'poster_url'              =>  'https://image.tmdb.org/t/p/w185'.$responseDetail->poster_path,
+          'poster_url'              =>  $posterUrl,
           'fondo_player'            =>  'https://image.tmdb.org/t/p/w780'.$responseDetail->backdrop_path,
           'youtube_id'              =>  "[{$responseVideo->results[0]->key}]"
         ]
@@ -157,7 +170,7 @@ try {
               break;
           }
         }
-        $my_post['post_title']                        = wp_strip_all_tags($responseDetail->name);
+        $my_post['post_title']                        = wp_strip_all_tags($postTitle);
         $my_post['post_type']                         = 'tvshows';
         $my_post['meta_input']['id']                  = $responseDetail->id;
         // TV Series Data
@@ -166,8 +179,8 @@ try {
         $my_post['meta_input']['last_air_date']       = $responseDetail->last_air_date;
         $my_post['meta_input']['serie_vote_average']  = $responseDetail->vote_average;
         $my_post['meta_input']['serie_vote_count']    = $responseDetail->vote_count;
-        $my_post['meta_input']['number_of_episodes']  = $responseDetail->number_of_episodes;
-        $my_post['meta_input']['number_of_seasons']   = $responseDetail->number_of_seasons;
+        $my_post['meta_input']['number_of_episodes']  = count($responseSeason->episodes);
+        $my_post['meta_input']['number_of_seasons']   = $responseSeason->season_number;
         $my_post['meta_input']['episode_run_time']    = $responseDetail->episode_run_time[0];
         $my_post['meta_input']['status']              = $responseDetail->status;
         // release year
@@ -198,8 +211,8 @@ try {
       set_post_thumbnail($postId, $attach_id);
       // set release year
       wp_set_object_terms( $postId, array($releaseYear), 'release-year');
-      // // set quality
-      // wp_set_object_terms( $postId, $quality, 'quality');
+      // set quality
+      wp_set_object_terms( $postId, $quality, 'quality');
       // set director
       wp_set_object_terms( $postId, $directors, 'director');
       // set actor

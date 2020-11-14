@@ -99,16 +99,16 @@ function getImageHtml($content){
   return $extractedImages[0]['src'];
 }
 
-function apg_base64_image_upload($post, $base64) {
+function apg_base64_image_upload($title, $base64) {
   $upload_dir       = wp_upload_dir();
   // @new
   $upload_path      = str_replace( '/', DIRECTORY_SEPARATOR, $upload_dir['path'] ) . DIRECTORY_SEPARATOR;
-  $img = $base64;
-  $img = str_replace('data:image/png;base64,', '', $img);
-  $img = str_replace('data:image/jpeg;base64,', '', $img);
-  $img = str_replace(' ', '+', $img);
+  $img              = $base64;
+  $img              = str_replace('data:image/png;base64,', '', $img);
+  $img              = str_replace('data:image/jpeg;base64,', '', $img);
+  $img              = str_replace(' ', '+', $img);
   $decoded          = base64_decode($img) ;
-  $filename         = apg_slugify($post['title']).'.png';
+  $filename         = apg_slugify($title).'.png';
   $hashed_filename  = md5( $filename . microtime() ) . '_' . $filename;
   // @new
   $image_upload     = file_put_contents( $upload_path . $hashed_filename, $decoded );
@@ -193,6 +193,8 @@ function apg_base64_image_download($title, $url){
   wp_update_attachment_metadata( $attach_id, $attach_data );
   return $attach_id;
 }
+
+
 
 function apg_wp_insert_post( $postarr, $wp_error = false ) {
   global $wpdb;
