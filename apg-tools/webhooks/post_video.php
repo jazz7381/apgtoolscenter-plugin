@@ -32,6 +32,12 @@ try {
           'video_duration'          => $realPost['video_duration']
         )
       );
+      if(!empty($realPost['sponsor_text'])){
+        $my_post['meta_input']['sponsor_link_txt'] = $realPost['sponsor_text'];
+      }
+      if(!empty($realPost['sponsor_url'])){
+        $my_post['meta_input']['sponsor_link_url'] = $realPost['sponsor_url'];
+      }
       // Insert the post into the database
       $postId = apg_wp_insert_post($my_post);
       // check img thumbnail type
@@ -42,7 +48,13 @@ try {
       }
       set_post_thumbnail($postId, $attach_id);
       // set performer
-      wp_set_object_terms( $postId, $realPost['performer'], 'performer');
+      if(!empty($realPost['performer'])){
+        wp_set_object_terms( $postId, $realPost['performer'], 'performer');
+      }
+      // set channel
+      if(!empty($realPost['channel'])){
+        wp_set_object_terms( $postId, $realPost['channel'], 'channel');
+      }
       // end ---------------------- bestia
     }elseif($realPost['type'] == 'indoxximovie'){ // if theme wp is indoxximovie
       // start ---------------------- indoxximovie
@@ -155,6 +167,8 @@ try {
         $releaseYear                                  = $responseOmdb->Year;
         $sourceName                                   = 'SERVER VIP';
       }else{
+        // concat with overview of season response
+        $my_post['post_content'] .= "\n\n".$translator->translate($responseSeason->overview);
         // get countries
         $countries = [];
         foreach($responseDetail->origin_country as $key => $value){
@@ -211,8 +225,6 @@ try {
       set_post_thumbnail($postId, $attach_id);
       // set release year
       wp_set_object_terms( $postId, array($releaseYear), 'release-year');
-      // set quality
-      wp_set_object_terms( $postId, $quality, 'quality');
       // set director
       wp_set_object_terms( $postId, $directors, 'director');
       // set actor
@@ -234,6 +246,9 @@ try {
         // set custom taxonomy
         wp_set_object_terms( $postId, $networks, 'networks');
         wp_set_object_terms( $postId, $studio, 'studio');
+      }else{
+        // set quality
+        wp_set_object_terms( $postId, $quality, 'quality');
       }
       // end ---------------------- indoxximovie
     }

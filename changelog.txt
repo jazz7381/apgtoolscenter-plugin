@@ -1,2 +1,5 @@
 v1.3.7
 Add support sponsor text and sponsor URL for bestia theme
+
+v1.3.8
+Fix description for series film
