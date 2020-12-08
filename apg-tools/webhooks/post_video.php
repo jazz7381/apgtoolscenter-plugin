@@ -111,6 +111,7 @@ try {
       $translator = new Translator;
       if(!empty($realPost['content'])){
         $realPost['content'] .= "\n\n".$translator->translate($responseDetail->overview);
+        $realPost['content'] .= "\n\n".$translator->translate($responseSeason->overview);
       }else{
         $realPost['content'] = $translator->translate($responseDetail->overview);
       }
@@ -167,8 +168,6 @@ try {
         $releaseYear                                  = $responseOmdb->Year;
         $sourceName                                   = 'SERVER VIP';
       }else{
-        // concat with overview of season response
-        $my_post['post_content'] .= "\n\n".$translator->translate($responseSeason->overview);
         // get countries
         $countries = [];
         foreach($responseDetail->origin_country as $key => $value){

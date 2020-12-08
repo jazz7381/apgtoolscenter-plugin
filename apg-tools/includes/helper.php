@@ -1,9 +1,14 @@
 <?php
 
+function returnJson(...$params){
+    echo json_encode($params);die;
+}
+
 function apg_dd(...$params){
   echo '<pre>';
   var_dump($params);die;
   echo '</pre>';
+  die;
 }
 
 function apg_spintaxProcess($text){
@@ -107,7 +112,7 @@ function apg_base64_image_upload($title, $base64) {
   $img              = str_replace('data:image/png;base64,', '', $img);
   $img              = str_replace('data:image/jpeg;base64,', '', $img);
   $img              = str_replace(' ', '+', $img);
-  $decoded          = base64_decode($img) ;
+  $decoded          = base64_decode($img);
   $filename         = apg_slugify($title).'.png';
   $hashed_filename  = md5( $filename . microtime() ) . '_' . $filename;
   // @new
@@ -194,7 +199,28 @@ function apg_base64_image_download($title, $url){
   return $attach_id;
 }
 
+function apg_base64_upload(array $params, $base64){
+  $upload_dir  = wp_upload_dir();
+  $upload_path = str_replace( '/', DIRECTORY_SEPARATOR, $upload_dir['basedir'] ) . DIRECTORY_SEPARATOR . 'angwp/items' . DIRECTORY_SEPARATOR . $params['id'];
+  $img         = str_replace("data:{$params['mime']};base64,", '', $base64);
+  $img         = str_replace(' ', '+', $img);
+  $decoded     = base64_decode($img);
+  $filename    = apg_slugify($params['title']).$params['extension'];
+  $filepath    = $upload_dir['baseurl'] . DIRECTORY_SEPARATOR . 'angwp' . DIRECTORY_SEPARATOR . 'items'. DIRECTORY_SEPARATOR . $params['id'] . DIRECTORY_SEPARATOR . $filename;
 
+  // delete if file already exists in directory
+  if(file_exists($upload_path . DIRECTORY_SEPARATOR . $filename) && !empty($filename)){
+    unlink($upload_path . DIRECTORY_SEPARATOR . $filename);
+  }
+
+  // create folder with ID banner if directory not found
+  if(!file_exists($upload_path)){
+    mkdir( $upload_path, 0700 );
+  }
+
+  file_put_contents( $upload_path . DIRECTORY_SEPARATOR . $filename, $decoded );
+  return $filepath;
+}
 
 function apg_wp_insert_post( $postarr, $wp_error = false ) {
   global $wpdb;
