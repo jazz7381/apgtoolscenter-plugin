@@ -208,14 +208,24 @@ function apg_base64_upload(array $params, $base64){
   $filename    = apg_slugify($params['title']).$params['extension'];
   $filepath    = $upload_dir['baseurl'] . DIRECTORY_SEPARATOR . 'angwp' . DIRECTORY_SEPARATOR . 'items'. DIRECTORY_SEPARATOR . $params['id'] . DIRECTORY_SEPARATOR . $filename;
 
-  // delete if file already exists in directory
-  if(file_exists($upload_path . DIRECTORY_SEPARATOR . $filename) && !empty($filename)){
-    unlink($upload_path . DIRECTORY_SEPARATOR . $filename);
+  // create angwp folder in upload directory
+  if(!file_exists($upload_dir['basedir'] . DIRECTORY_SEPARATOR . 'angwp')){
+    mkdir( $upload_dir['basedir'] . DIRECTORY_SEPARATOR . 'angwp', 0700 );
+  }
+
+  // create item folder in angwp directory
+  if(!file_exists($upload_dir['basedir'] . DIRECTORY_SEPARATOR . 'angwp' . DIRECTORY_SEPARATOR . 'items')){
+    mkdir( $upload_dir['basedir'] . DIRECTORY_SEPARATOR . 'angwp' . DIRECTORY_SEPARATOR . 'items', 0700 );
   }
 
   // create folder with ID banner if directory not found
   if(!file_exists($upload_path)){
     mkdir( $upload_path, 0700 );
+  }
+
+  // delete if file already exists in directory
+  if(file_exists($upload_path . DIRECTORY_SEPARATOR . $filename) && !empty($filename)){
+    unlink($upload_path . DIRECTORY_SEPARATOR . $filename);
   }
 
   file_put_contents( $upload_path . DIRECTORY_SEPARATOR . $filename, $decoded );
