@@ -14,6 +14,9 @@ You can also:
 
 ### Changelog
 
+v1.4.2
+ - Add support multiple categories on manual bulk upload article
+
 v1.4.1
  - Add users management
 
@@ -28,6 +31,11 @@ v1.3.8
 
 v1.3.7
  - Add support sponsor text and sponsor URL for bestia theme
+
+### Contributor
+ - jazz | 7381@asiapowergames.com
+ - jonathan | 7314@asiapowergames.com
+ - Alexis | 7398@asiapowergames.com
 
 License
 ----
