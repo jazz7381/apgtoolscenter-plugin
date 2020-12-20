@@ -14,6 +14,9 @@ You can also:
 
 ### Changelog
 
+v1.4.3
+ - Fix bug rank math focus keyword not provide in bulk and schedule post
+
 v1.4.2
  - Add support multiple categories on manual bulk upload article
 

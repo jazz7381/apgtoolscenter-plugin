@@ -22,7 +22,10 @@ try {
       'post_status'   => 'publish',
       'post_author'   => 1,
       'post_category' => $catIds,
-      'tags_input'    => $realPost['tag']
+      'tags_input'    => $realPost['tag'],
+      'meta_input'    => [
+        'rank_math_focus_keyword' => wp_strip_all_tags( $post['post']['title'] )
+      ]
     );
     // Insert the post into the database
     $postId = apg_wp_insert_post($my_post);
@@ -62,6 +65,9 @@ try {
       'post_author'   => 1,
       'post_category' => $arrayCatIds,
       'tags_input'    => $realPost['tag'],
+      'meta_input'    => [
+        'rank_math_focus_keyword' => wp_strip_all_tags( $post['post']['title'] )
+      ]
     );
     // Insert the post into the database
     $postId             = apg_wp_insert_post($my_post);
