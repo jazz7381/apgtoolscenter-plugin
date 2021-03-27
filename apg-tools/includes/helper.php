@@ -104,7 +104,7 @@ function getImageHtml($content){
   return $extractedImages[0]['src'];
 }
 
-function apg_base64_image_upload($title, $base64) {
+function apg_base64_image_upload($title, $base64, $postId) {
   $upload_dir       = wp_upload_dir();
   // @new
   $upload_path      = str_replace( '/', DIRECTORY_SEPARATOR, $upload_dir['path'] ) . DIRECTORY_SEPARATOR;
@@ -144,14 +144,14 @@ function apg_base64_image_upload($title, $base64) {
     'post_status' => 'inherit',
     'guid' => $upload_dir['url'] . '/' . basename($filename)
   );
-  $attach_id = wp_insert_attachment( $attachment, $filename, 289 );
+  $attach_id = wp_insert_attachment( $attachment, $filename, $postId );
   require_once(ABSPATH . 'wp-admin/includes/image.php');
   $attach_data = wp_generate_attachment_metadata( $attach_id, $filename );
   wp_update_attachment_metadata( $attach_id, $attach_data );
   return $attach_id;
 }
 
-function apg_base64_image_download($title, $url){
+function apg_base64_image_download($title, $url, $postId){
   $upload_dir       = wp_upload_dir();
   // @new
   $upload_path      = str_replace( '/', DIRECTORY_SEPARATOR, $upload_dir['path'] ) . DIRECTORY_SEPARATOR;
@@ -192,7 +192,7 @@ function apg_base64_image_download($title, $url){
     'post_status' => 'inherit',
     'guid' => $upload_dir['url'] . '/' . basename($filename)
   );
-  $attach_id = wp_insert_attachment( $attachment, $filename, 289 );
+  $attach_id = wp_insert_attachment( $attachment, $filename, $postId );
   require_once(ABSPATH . 'wp-admin/includes/image.php');
   $attach_data = wp_generate_attachment_metadata( $attach_id, $filename );
   wp_update_attachment_metadata( $attach_id, $attach_data );

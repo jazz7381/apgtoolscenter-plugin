@@ -42,9 +42,9 @@ try {
       $postId = apg_wp_insert_post($my_post);
       // check img thumbnail type
       if($realPost['image_source']['source_type'] == 'file'){
-        $attach_id = apg_base64_image_upload($my_post['post_title'], $realPost['image_source']['source_content']);
+        $attach_id = apg_base64_image_upload($my_post['post_title'], $realPost['image_source']['source_content'], $postId);
       }else{
-        $attach_id = apg_base64_image_download($realPost['title'], $realPost['image_source']['source_content']);
+        $attach_id = apg_base64_image_download($realPost['title'], $realPost['image_source']['source_content'], $postId);
       }
       set_post_thumbnail($postId, $attach_id);
       // set performer
@@ -219,7 +219,7 @@ try {
       // Insert the post into the database
       $postId = apg_wp_insert_post($my_post);
       // insert thumbnail
-      $attach_id = apg_base64_image_download($realPost['title'], $my_post['meta_input']['poster_url']);
+      $attach_id = apg_base64_image_download($realPost['title'], $my_post['meta_input']['poster_url'], $postId);
       // set attachment id thumbnail to post
       set_post_thumbnail($postId, $attach_id);
       // set release year
