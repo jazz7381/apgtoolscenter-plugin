@@ -67,6 +67,7 @@ try {
     // set attachment thumbnail to post
     set_post_thumbnail($postId, $attach_id);
   }elseif($realPost['type'] == 'schedule'){// schedule post
+    $postTitle = wp_strip_all_tags( $post['post']['title'] );
     // get image
     $image  = $realPost['image'];
     $imageType = $realPost['image_type'];
@@ -77,14 +78,14 @@ try {
     }
     // Create post object
     $my_post = array(
-      'post_title'    => wp_strip_all_tags( $post['post']['title'] ),
+      'post_title'    => $postTitle,
       'post_content'  => $post['post']['content'],
       'post_status'   => 'publish',
       'post_author'   => 1,
       'post_category' => $arrayCatIds,
       'tags_input'    => $realPost['tag'],
       'meta_input'    => [
-        'rank_math_focus_keyword' => wp_strip_all_tags( $post['post']['title'] )
+        'rank_math_focus_keyword' => $postTitle
       ]
     );
 
